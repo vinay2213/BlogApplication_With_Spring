@@ -131,9 +131,9 @@ public class PostController {
     }
 
     @GetMapping("/post/{id}")
-    public String getPost(@PathVariable Integer postId, Model model) {
-        List<Comment> comments = commentService.findAllBYPostId((postId));
-        Post post = postService.findById(postId);
+    public String getPost(@PathVariable Integer id, Model model) {
+        List<Comment> comments = commentService.findAllBYPostId((id));
+        Post post = postService.findById(id);
 
         if (post.getAdminName() != null) {
             model.addAttribute("adminCreated", "Admin created post...");
