@@ -3,51 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Login Page</title>
-  <style>
-    form {
-      width: 300px;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      background-color: #f8f8f8;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .error-message {
-      color: #d9534f; /* Bootstrap's danger color */
-      font-size: 14px;
-      margin-top: 5px;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      width: 80%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    input[type="submit"] {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .register-link {
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    a {
-      color: #007bff;
-      text-decoration: none;
-    }
-  </style>
 </head>
 <body>
 <form action="#" th:action="@{/authenticateTheUser}" method="POST">
@@ -59,11 +14,11 @@
     <i>You have been logged out</i>
   </div>
 
-  User Name : <input type="text" name="username"> <br>
-  Password : <input type="password" name="password"> <br>
+  User Name : <input type="text" name="username"> <br> <br>
+  Password : <input type="password" name="password"> <br> <br>
   <input type="submit" value="Login">
-  <br>
-  <a th:href="@{/forgot-password}">Forgot Password</a>
+
+  <a th:href="@{/forgot-password}">Forgot Password</a> <br>
   <div>
     If you don't have account : <a th:href="@{/register}">Register</a>
   </div>
