@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>Blogs</title>
+  <style>
+    .container {
+      display:grid;
+      grid-template-column:1fr 2fr;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .filter-container {
+      flex: 0 0 25%;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+      background-color: #f7f7f7;
+      grid-column:1/3;
+    }
+    .filter-section {
+      margin-bottom: 15px;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    .filter-container input[type="checkbox"],
+    .filter-container input[type="datetime-local"] {
+      margin-right: 5px;
+    }
+    .filter-container input[type="reset"],
+    .filter-container input[type="submit"] {
+      padding: 8px 15px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .box-container {
+      flex: 0 0 70%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      grid-column:4/7;
+      line-height:2;
+    }
+    .post-box {
+      flex: 0 0 calc(33.33% - 20px);
+      border: 1px solid #ccc;
+      padding: 15px;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+    .post-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .post-excerpt,
+    .post-author,
+    .post-publishedAt,
+    .post-tags {
+      margin-bottom: 10px;
+    }
+    .tag {
+      background-color: #007bff;
+      color: #fff;
+      padding: 5px 10px;
+      width:fit-content;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+    .next-page,
+    .previous-page {
+      margin-top: 20px;
+    }
+    .next-page button,
+    .previous-page button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 15px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .next-page button a,
+    .previous-page button a {
+      color: #fff;
+      text-decoration: none;
+      text-align:center;
+    }
+    .buttons-container {
+      background-color: #007bff;
+      border:0 solid ;
+      padding:10px;
+      display:flex;
+    }
+    .buttons-container a {
+      text-decoration:none;
+      color:white;
+    }
+    .button {
+      display:flex;
+      justify-content:space-around;
+    }
+  </style>
+</head>
+<body>
+
+<div sec:authorize="isAuthenticated()">
+  <h2>Welcome   <span sec:authentication="principal.username"></span> </h2>
+</div>
+
+<div class="button">
+  <div sec:authorize="isAuthenticated()" >
+    <button class="buttons-container"> <a class="add-button" th:href="@{/new-post}">
+      Add Post
+    </a></button>
+  </div>
+
+  <div sec:authorize="isAuthenticated()" >
+    <form th:action="@{/my-posts}" method="GET">
+      <button class="buttons-container"> <input type="submit" value="My Posts"></button>
+    </form>
+  </div>
+
+  <div sec:authorize="isAuthenticated()" >
+    <form th:action="@{/my-drafts}" method="GET">
+      <button class="buttons-container"> <input type="submit" value="My Drafts"></button>
+    </form>
+  </div>
+  <div sec:authorize="!isAuthenticated()" >
+    <button class="buttons-container"> <a th:href="@{/login}">Login</a></button>
+  </div>
+  <div sec:authorize="!isAuthenticated()" >
+    <button class="buttons-container"> <a th:href="@{/register}">Register</a></button>
+  </div>
+
+  <div sec:authorize="isAuthenticated()" >
+    <form th:action="@{/logout}" method="POST">
+      <button class="buttons-container"><input type="submit" value="Logout"></button>
+    </form>
+  </div>
+</div>
+
+<form th:action="@{'/page/' + 1}" method="get" id="searchForm">
+  <label for="search">Search:</label>
+  <input type="search" id="search" name="search" placeholder="Enter your search term" />
+  <input type="hidden" name="sortDirection" th:value="${sortDirection}" />
+  <input type="hidden" name="sortField" th:value="${sortField}" />
+  <input type="submit" value="Search">
+</form>
+
+<form th:action="@{'/page/' + ${currentPage}}" method="get" id="sortForm">
+  <label for="sortDirection">Sort by Published Date:</label>
+  <select name="sortDirection" id="sortDirection">
+    <option value="asc" th:selected="${sortDirection == 'asc'}">Old to new Posts</option>
+    <option value="desc" th:selected="${sortDirection == 'desc'}">Recommended</option>
+  </select>
+  <input type="hidden" name="sortField" th:value="${sortField}" />
+  <input th:if="${selectedAuthors}" type="hidden" name="selectedAuthors" th:each="author : ${selectedAuthors}" th:value="${author}" />
+  <input th:if="${selectedTags}" type="hidden" name="selectedTags" th:each="tag : ${selectedTags}" th:value="${tag}" />
+  <input th:if="${startDate}" type="hidden" name="startDate" th:value="${startDate}">
+  <input th:if="${endDate}" type="hidden" name="endDate" th:value="${endDate}">
+
+  <button type="submit">Apply Sorting</button>
+</form>
+<div class="container">
+  <div class = "filter-container">
+    <h2>Filters</h2>
+    <form th:action="@{'/page/'+${currentPage}}" method="get" id="sortFilterForm">
+      <div class="filter-section">
+        <h2>Authors</h2>
+        <div th:each="author : ${authors}">
+          <input type="checkbox" th:id="'author-' + ${author}" th:name="selectedAuthors" th:value="${author}"
+                 th:checked="${selectedAuthors != null and #strings.contains(selectedAuthors, author)}">
+          <label th:for="'author-' + ${author}" th:text="${author}"></label>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h2>Tags</h2>
+        <div th:each="tag : ${tags}">
+          <input type="checkbox" th:id="'tag-' + ${tag}" th:name="selectedTags" th:value="${tag}"
+                 th:checked="${selectedTags != null and #strings.contains(selectedTags, tag)}">
+          <label th:for="'tag-' + ${tag}" th:text="${tag}"></label>
+        </div>
+      </div>
+
+      <div class = "buttons">
+        <div >
+          <h2>Published Date : </h2>
+          <input type="datetime-local" th:value="${startDate}" name="startDate">
+          <input type="datetime-local" th:value="${endDate}" name="endDate">
+        </div>
+        <br>
+        <br>
+        <input type="hidden" name="sortField" th:value="${sortField}" />
+        <input type="hidden" name="sortDirection" th:value="${sortDirection}" />
+        <input type="hidden" name="selectedAuthors" th:each="author : ${selectedAuthors}" th:value="${author}" />
+        <input type="hidden" name="selectedTags" th:each="tag : ${selectedTags}" th:value="${tag}" />
+        <input th:if="${startDate}" type="hidden" name="startDate" th:value="${startDate}">
+        <input th:if="${endDate}" type="hidden" name="endDate" th:value="${endDate}">
+        <input type="reset" value="Reset" id="resetButton">
+        <input type="submit" value="Apply Filters">
+      </div>
+    </form>
+  </div>
+
+  <div class="box-container">
+    <div th:each="post : ${posts}" class="post-box">
+      <a th:href="@{'/post/' + ${post.id}}" class="post-title" th:text="${post.title}"></a>
+      <p class="post-excerpt" th:text="${post.excerpt}"></p>
+      <p class="post-author" th:text="${post.author}"></p>
+      <p class="post-publishedAt" th:text="${#temporals.format(post.publishedAt, 'yyyy-MM-dd h:mma')}"></p>
+      <p class="post-tags">
+                <span th:each="tag, tagStat : ${post.tags}">
+                    <span class="tag" th:text="${tag.name}"></span>
+                    <span th:if="${!tagStat.last}">, </span>
+                </span>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<div class = "next-page">
+  <button th:if="${currentPage < totalPages}">
+    <a th:href="@{/page/{pageNo}(pageNo=${currentPage + 1}, pageSize=${pageSize}, sortDirection=${sortDirection}, sortField=${sortField}
+            , selectedAuthors=${selectedAuthors}, selectedTags=${selectedTags},startDate=${startDate}, endDate=${endDate})}">
+      Next Page
+    </a>
+  </button>
+</div>
+
+<div class="previous-page">
+  <button th:if="${currentPage > 1}">
+    <a th:href="@{/page/{pageNo}(pageNo=${currentPage - 1}, pageSize=${pageSize}, sortDirection=${sortDirection}, sortField=${sortField}
+            , selectedAuthors=${selectedAuthors}, selectedTags=${selectedTags},startDate=${startDate}, endDate=${endDate})}">
+      Previous Page
+    </a>
+  </button>
+</div>
+</div>
+<script th:inline="javascript">
+  document.getElementById("resetButton").addEventListener("click", function(event) {
+    event.preventDefault();
+    var checkboxes = document.querySelectorAll('[name="selectedAuthors"], [name="selectedTags"]');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.checked = false;
+    });
+    window.location.href="/";
+  });
+
+</script>
+
+</body>
+</html>
