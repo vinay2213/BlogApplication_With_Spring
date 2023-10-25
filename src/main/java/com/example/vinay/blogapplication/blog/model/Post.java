@@ -1,9 +1,11 @@
 package com.example.vinay.blogapplication.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+
 
 @Entity
 @Table(name = "posts")
@@ -41,6 +43,8 @@ public class Post {
 
     @OneToMany(targetEntity = Comment.class, cascade = CascadeType.ALL, mappedBy = "post")
     private Set<Comment> comments;
+
+    @JsonIgnore
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     @JoinTable(name="post_tags", joinColumns = @JoinColumn(name="post_id"),
             inverseJoinColumns = @JoinColumn(name="tag_id"))

@@ -1,5 +1,6 @@
 package com.example.vinay.blogapplication.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,8 @@ public class  Comment {
     private String email;
     @Column(name="comment")
     private String content;
+
+    @JsonIgnore
     @ManyToOne(targetEntity = Post.class)
     @JoinColumn(name ="post_id", referencedColumnName = "id", insertable=false, updatable=false)
     private Post post;
